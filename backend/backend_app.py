@@ -9,7 +9,7 @@ CORS(app)  # This will enable CORS for all routes
 
 POSTS = [
     {"id": 1, "title": "First post", "content": "This is the first post."},
-    {"id": 2, "title": "Second post", "content": "This is the second post."},
+    {"id": 2, "title": "Second post omg", "content": "This is the second post."},
 ]
 
 
@@ -79,6 +79,24 @@ def update_post(post_id):
     post.update({'title': title, 'content': content})
 
     return jsonify(post), 200
+
+
+
+@app.route('/api/posts/search', methods=['GET'])
+def search_posts():
+    title_query = request.args.get('title', '').lower()
+    content_query = request.args.get('content', '').lower()
+
+    results = []
+    for post in POSTS:
+        title_match = title_query in post['title'].lower() if title_query else True
+        content_match = content_query in post['content'].lower() if content_query else True
+
+        if title_match and content_match:
+            results.append(post)
+
+    return jsonify(results), 200
+
 
 
 if __name__ == '__main__':
