@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from util.validation import is_valid_post
+from util.validation import is_valid_post, is_valid_title, is_valid_content
 from util.id_generator import generate_id
+from util.is_id_exists import is_id_exists
 
 app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
@@ -34,8 +35,50 @@ def get_posts():
 
     return jsonify(POSTS)
 
+@app.route('/api/posts/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    id_exists , post = is_id_exists(post_id, POSTS)
+    if not id_exists:
+        return jsonify({'error': 'Post not found'}), 404
+    POSTS.remove(post)
+
+    return jsonify({'message': f'Post with id {post_id} has been deleted successfully.'}), 200
+
+@app.route('/api/posts/<int:post_id>', methods=['GET'])
+def edit_post(post_id):
+    id_exists, post = is_id_exists(post_id, POSTS)
+    if not is_id_exists:
+        return jsonify({'error': 'Post not found'}), 404
+
+    return jsonify({'id': post['id'], 'title': post['title'], 'content': post['content']}), 200
+
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id):
+    post_data = request.get_json()
+    id_exists, post = is_id_exists(post_id, POSTS)
+
+    if not is_id_exists:
+        return jsonify({'error': 'Post not found'}), 404
+
+    title = post['title']
+    if 'title' in post_data and post_data['title']:
+        valid_flag, message = is_valid_title(post_data)
+        if not valid_flag:
+            return jsonify({'error': message}), 400
+
+        title = post_data['title']
+
+    content = post['content']
+    if 'content' in post_data and post_data['content']:
+        valid_flag, message = is_valid_content(post_data)
+        if not valid_flag:
+            return jsonify({'error': message}), 400
+        content = post_data['content']
 
 
+    post.update({'title': title, 'content': content})
+
+    return jsonify(post), 200
 
 
 if __name__ == '__main__':

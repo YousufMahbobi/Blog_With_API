@@ -15,9 +15,10 @@
             <button onclick="loadPosts()">Load Posts</button>
         </div>
         <div class="input-field">
+            <input type="hidden" id="hidden_post_id" placeholder="postID">
             <input type="text" id="post-title" placeholder="Enter Post Title">
             <input type="text" id="post-content" placeholder="Enter Post Content">
-            <button onclick="addPost()">Add Post</button>
+            <button id="addOrUpdatePostBtn" onclick="addPost()">Add Post</button>
         </div>
         <div id="post-container">
             <!-- Blog posts will be inserted here by JavaScript -->

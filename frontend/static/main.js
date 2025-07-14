@@ -12,6 +12,12 @@ window.onload = function() {
 // Function to fetch all the posts from the API and display them on the page
 function loadPosts() {
     // Retrieve the base URL from the input field and save it to local storage
+    var postTitle = document.getElementById('post-title');
+    var postContent = document.getElementById('post-content');
+    var addOrUpdatePostBtn = document.getElementById('addOrUpdatePostBtn')
+    postTitle.value = ''
+    postContent.value = ''
+    addOrUpdatePostBtn.textContent ='Add Post'
     var baseUrl = document.getElementById('api-base-url').value;
     localStorage.setItem('apiBaseUrl', baseUrl);
 
@@ -28,7 +34,10 @@ function loadPosts() {
                 const postDiv = document.createElement('div');
                 postDiv.className = 'post';
                 postDiv.innerHTML = `<h2>${post.title}</h2><p>${post.content}</p>
-                <button onclick="deletePost(${post.id})">Delete</button>`;
+                <button onclick="editPost(${post.id})">Update</button>
+                <button onclick="deletePost(${post.id})">Delete</button>
+                `;
+
                 postContainer.appendChild(postDiv);
             });
         })
@@ -58,6 +67,7 @@ function addPost() {
 
 // Function to send a DELETE request to the API to delete a post
 function deletePost(postId) {
+    console.log(postId)
     var baseUrl = document.getElementById('api-base-url').value;
 
     // Use the Fetch API to send a DELETE request to the specific post's endpoint
@@ -70,3 +80,48 @@ function deletePost(postId) {
     })
     .catch(error => console.error('Error:', error));  // If an error occurs, log it to the console
 }
+
+function editPost(postId){
+    console.log(postId)
+    var baseUrl = document.getElementById('api-base-url').value;
+    var postTitle = document.getElementById('post-title')
+    var postContent = document.getElementById('post-content')
+    var hidden_post_id = document.getElementById('hidden_post_id')
+    var addOrUpdatePostBtn = document.getElementById('addOrUpdatePostBtn')
+    postTitle.value = ''
+    postContent.value = ''
+    addOrUpdatePostBtn.textContent = 'Save Post'
+    fetch(baseUrl + '/posts/' + postId, {
+        method: 'GET',
+    })
+    .then(response => response.json())  // Parse the JSON data from the response
+    .then(post => {
+        postTitle.value = post.title
+        postContent.value = post.content
+        hidden_post_id.value = post.id
+        addOrUpdatePostBtn.onclick = updatePost
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function updatePost() {
+    // Retrieve the values from the input fields
+    var baseUrl = document.getElementById('api-base-url').value;
+    var postTitle = document.getElementById('post-title').value;
+    var postContent = document.getElementById('post-content').value;
+    var hidden_post_id = document.getElementById('hidden_post_id').value;
+
+    // Use the Fetch API to send a POST request to the /posts endpoint
+    fetch(baseUrl + '/posts/' + hidden_post_id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: postTitle, content: postContent })
+    })
+    .then(response => response.json())  // Parse the JSON data from the response
+    .then(post => {
+        console.log('Post updated:', post);
+        loadPosts(); // Reload the posts after adding a new one
+    })
+    .catch(error => console.error('Error:', error));  // If an error occurs, log it to the console
+}
+
