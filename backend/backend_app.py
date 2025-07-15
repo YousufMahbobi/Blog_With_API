@@ -30,10 +30,18 @@ def get_posts():
         }
 
         POSTS.append(new_post)
-
         return jsonify(new_post), 201
 
-    return jsonify(POSTS)
+    else:
+        sort = request.args.get('sort', '').lower()
+        direction = request.args.get('direction', '').lower()
+
+        valid_sort = sort in ['title', 'content'] and direction in ['asc', 'desc']
+        if valid_sort:
+            reverse = direction == 'desc'
+            return jsonify(sorted(POSTS, key=lambda x: x[sort], reverse=reverse)), 200
+        else:
+            return jsonify(POSTS)
 
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
